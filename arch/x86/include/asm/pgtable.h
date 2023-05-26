@@ -699,7 +699,10 @@ static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
 static inline void ptep_set_wrprotect(struct mm_struct *mm,
 				      unsigned long addr, pte_t *ptep)
 {
-	clear_bit(_PAGE_BIT_RW, (unsigned long *)&ptep->pte);
+	pte_t aux = *ptep;
+
+	clear_bit(_PAGE_BIT_RW, (unsigned long *)&aux.pte);
+	set_pte(ptep, aux);
 	pte_update(mm, addr, ptep);
 }
 

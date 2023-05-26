@@ -412,8 +412,8 @@ static int __init dmi_present(const char __iomem *p)
 		 * the SMBIOS version, which we don't know at this point.
 		 */
 		if (buf[14] != 0)
-			printk(KERN_INFO "DMI %d.%d present.\n",
-			       buf[14] >> 4, buf[14] & 0xF);
+			printk(KERN_INFO "DMI %d.%d present at 0x%x.\n",
+			       buf[14] >> 4, buf[14] & 0xF, dmi_base);
 		else
 			printk(KERN_INFO "DMI present.\n");
 		if (dmi_walk_early(dmi_decode) == 0) {

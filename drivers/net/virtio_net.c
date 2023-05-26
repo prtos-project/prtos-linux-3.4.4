@@ -307,6 +307,7 @@ static void receive_buf(struct net_device *dev, void *buf, unsigned int len)
 	}
 
 	skb->protocol = eth_type_trans(skb, dev);
+	skb->ip_summed = CHECKSUM_UNNECESSARY;
 	pr_debug("Receiving skb proto 0x%04x len %i type %i\n",
 		 ntohs(skb->protocol), skb->len, skb->pkt_type);
 

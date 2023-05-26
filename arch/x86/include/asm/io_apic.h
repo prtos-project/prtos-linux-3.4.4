@@ -187,7 +187,7 @@ extern void disable_ioapic_support(void);
 
 #else  /* !CONFIG_X86_IO_APIC */
 
-#define io_apic_assign_pci_irqs 0
+#define io_apic_assign_pci_irqs 1
 #define setup_ioapic_ids_from_mpc x86_init_noop
 static const int timer_through_8259 = 0;
 static inline void ioapic_and_gsi_init(void) { }

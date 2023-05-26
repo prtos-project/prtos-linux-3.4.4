@@ -68,6 +68,9 @@ jiffies_64 = jiffies;
 #endif
 
 PHDRS {
+#ifdef CONFIG_PRTOS_PARTITION
+	prtosboot PT_LOAD FLAGS(5);
+#endif
 	text PT_LOAD FLAGS(5);          /* R_E */
 	data PT_LOAD FLAGS(6);          /* RW_ */
 #ifdef CONFIG_X86_64
@@ -81,13 +84,28 @@ PHDRS {
 
 SECTIONS
 {
-#ifdef CONFIG_X86_32
+
+#ifdef CONFIG_PRTOS_PARTITION
+        . = LOAD_PHYSICAL_ADDR;
+        .prtosboot : {
+            *(.prtosinit.text)
+        } :prtosboot
+        .prtosImageHdr : {
+        	*(.prtosImageHdr)
+        } :prtosboot
+        . = ALIGN(PAGE_SIZE);
+        . = . + LOAD_OFFSET;
+        phys_startup_32 = prtos_boot;
+        prtosImageHdr = __prtosImageHdr + LOAD_OFFSET;
+#else
         . = LOAD_OFFSET + LOAD_PHYSICAL_ADDR;
+#ifdef CONFIG_X86_32
         phys_startup_32 = startup_32 - LOAD_OFFSET;
 #else
         . = __START_KERNEL;
         phys_startup_64 = startup_64 - LOAD_OFFSET;
-#endif
+#endif /*CONFIG_X86_32*/
+#endif /*CONFIG_PRTOS_PARTITION*/
 
 	/* Text and read-only data */
 	.text :  AT(ADDR(.text) - LOAD_OFFSET) {
@@ -149,6 +167,10 @@ SECTIONS
 
 		/* End of data section */
 		_edata = .;
+	} :data
+
+	.prtos_boot_params : AT(ADDR(.prtos_boot_params) - LOAD_OFFSET) {
+		*(.prtos_boot_params)
 	} :data
 
 #ifdef CONFIG_X86_64
@@ -328,10 +350,16 @@ SECTIONS
 		__brk_limit = .;
 	}
 
+#ifdef CONFIG_PRTOS_PARTITION
+	. = ALIGN(PAGE_SIZE);
+	initrd = .;
+	initrd_phys = . - LOAD_OFFSET;
+#endif
 	_end = .;
 
         STABS_DEBUG
         DWARF_DEBUG
+
 
 	/* Sections to be discarded */
 	DISCARDS
@@ -343,7 +371,7 @@ SECTIONS
 /*
  * The ASSERT() sink to . is intentional, for binutils 2.14 compatibility:
  */
-. = ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
+. = ASSERT((_end - (LOAD_OFFSET+LOAD_PHYSICAL_ADDR) <= KERNEL_IMAGE_SIZE),
 	   "kernel image bigger than KERNEL_IMAGE_SIZE");
 #else
 /*

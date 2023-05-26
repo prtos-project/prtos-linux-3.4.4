@@ -508,6 +508,7 @@ static int __devinit virtblk_probe(struct virtio_device *vdev)
 
 	/* No real sector limit. */
 	blk_queue_max_hw_sectors(q, -1U);
+	blk_queue_max_hw_sectors(q, 8);
 
 	/* Host can optionally specify maximum segment size and number of
 	 * segments. */

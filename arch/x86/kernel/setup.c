@@ -707,7 +707,7 @@ void __init setup_arch(char **cmdline_p)
 	early_trap_init();
 	early_cpu_init();
 	early_ioremap_init();
-
+	
 	setup_olpc_ofw_pgd();
 
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
@@ -916,8 +916,9 @@ void __init setup_arch(char **cmdline_p)
 
 	printk(KERN_DEBUG "initial memory mapped : 0 - %08lx\n",
 			max_pfn_mapped<<PAGE_SHIFT);
-
+#ifndef CONFIG_PRTOS_PARTITION
 	setup_trampolines();
+#endif
 
 	init_gbpages();
 

@@ -34,9 +34,11 @@ void __init setup_trampolines(void)
  */
 static int __init configure_trampolines(void)
 {
+#ifndef CONFIG_PRTOS_PARTITION
 	size_t size = PAGE_ALIGN(x86_trampoline_end - x86_trampoline_start);
 
 	set_memory_x((unsigned long)x86_trampoline_base, size >> PAGE_SHIFT);
+#endif /*CONFIG_PRTOS_PARTITION*/
 	return 0;
 }
 arch_initcall(configure_trampolines);

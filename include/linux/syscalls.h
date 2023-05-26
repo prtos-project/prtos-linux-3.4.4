@@ -858,4 +858,9 @@ asmlinkage long sys_process_vm_writev(pid_t pid,
 				      unsigned long riovcnt,
 				      unsigned long flags);
 
+#ifdef CONFIG_IOX
+asmlinkage long sys_iox_raise_irq(int irq);
+asmlinkage long sys_iox_wait_irq(void);
+#endif /*CONFIG_IOX*/
+
 #endif

@@ -1411,6 +1411,44 @@ ENTRY(async_page_fault)
 END(async_page_fault)
 #endif
 
+#ifdef CONFIG_PRTOS_PARTITION
+
+.section .init.rodata,"a"
+ENTRY(ext_interrupt)
+.text
+	.p2align 5
+	.p2align CONFIG_X86_L1_CACHE_SHIFT
+ENTRY(ext_irq_entries_start)
+	RING0_INT_FRAME
+vector=0
+.rept 32
+1:
+	pushl $~(vector)
+	CFI_ADJUST_CFA_OFFSET 4
+	jmp common_ext_irq
+.previous
+	.long 1b
+.text
+vector=vector+1
+.endr
+
+END(ext_irq_entries_start)
+.previous
+END(ext_interrupt)
+.previous
+
+	.p2align CONFIG_X86_L1_CACHE_SHIFT
+common_ext_irq:
+	SAVE_ALL
+	TRACE_IRQS_OFF
+	movl %esp,%eax
+	call do_extIRQ
+	jmp ret_from_intr
+ENDPROC(common_ext_irq)
+	CFI_ENDPROC
+
+#endif
+	
 /*
  * End of kprobes section
  */

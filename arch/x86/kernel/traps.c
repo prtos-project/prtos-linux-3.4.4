@@ -255,6 +255,11 @@ dotraplinkage void __kprobes
 do_general_protection(struct pt_regs *regs, long error_code)
 {
 	struct task_struct *tsk;
+#ifdef CONFIG_PRTOS_PARTITION
+        extern int prtos_skip_io(struct pt_regs *regs);
+        if (prtos_skip_io(regs))
+            return;
+#endif
 
 	conditional_sti(regs);
 
@@ -660,9 +665,15 @@ dotraplinkage void do_iret_error(struct pt_regs *regs, long error_code)
 /* Set of traps needed for early debugging. */
 void __init early_trap_init(void)
 {
+#ifdef CONFIG_PRTOS_PARTITION
+	asmlinkage void early_general_protection(void);
+#endif
 	set_intr_gate_ist(X86_TRAP_DB, &debug, DEBUG_STACK);
 	/* int3 can be called from all */
 	set_system_intr_gate_ist(X86_TRAP_BP, &int3, DEBUG_STACK);
+#ifdef CONFIG_PRTOS_PARTITION
+	set_intr_gate(13, &general_protection);
+#endif
 	set_intr_gate(X86_TRAP_PF, &page_fault);
 	load_idt(&idt_descr);
 }

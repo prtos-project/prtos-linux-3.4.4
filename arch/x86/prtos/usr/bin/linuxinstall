@@ -1,0 +1,189 @@
+#!/bin/bash
+#
+# $Description: 
+# Created by Salva Peiró <speiro@ai2.upv.es>
+# $Id: linuxinstall, 2012/11/23.
+# $License: Read LICENSE.txt file for the license terms.
+#
+
+LINUX=\
+(
+    # kernel
+    vmlinux
+    .config
+
+    # modules/
+    arch/x86/prtos/usr/lib/firmware/*
+    arch/x86/prtos/usr/lib/firmware/*/*
+    arch/x86/prtos/usr/lib/modules/${KERNELVERSION}+/kernel/
+    arch/x86/prtos/usr/lib/modules/${KERNELVERSION}+/kernel/*
+    arch/x86/prtos/usr/lib/modules/${KERNELVERSION}+/kernel/*/{.,*}
+    arch/x86/prtos/usr/lib/modules/${KERNELVERSION}+/kernel/*/*/{.,*}
+    arch/x86/prtos/usr/lib/modules/${KERNELVERSION}+/kernel/*/*/*/{.,*}
+    #arch/x86/prtos/usr/lib/modules/${KERNELVERSION}+/kernel/*/*/*/*/{.,*}
+    #arch/x86/prtos/usr/lib/modules/${KERNELVERSION}+/kernel/*/*/*/*/*/{.,*}
+    arch/x86/prtos/usr/lib/modules/$KERNELRELEASE/modules.*
+	
+    # common
+    arch/x86/prtos/usr/common/
+    arch/x86/prtos/usr/common/rules.mk
+    arch/x86/prtos/usr/common/config.mk
+
+    # initrd-root
+    arch/x86/prtos/usr/initrd-root/
+    arch/x86/prtos/usr/initrd-root/*
+    arch/x86/prtos/usr/initrd-root/*/*
+    arch/x86/prtos/usr/initrd-root/*/*/*
+
+    # tools
+    arch/x86/prtos/usr/bin/
+    arch/x86/prtos/usr/bin/relocate
+    arch/x86/prtos/usr/bin/build_linux
+    arch/x86/prtos/usr/bin/extract_mem
+    arch/x86/prtos/usr/bin/mkinitramfs
+    arch/x86/prtos/usr/bin/grub_iso
+    arch/x86/prtos/usr/bin/20_linux_prtos
+
+)
+
+EXAMPLES=\
+(
+    # examples
+    prtos-examples/
+    prtos-examples/prtos-1.0.0-examples/
+    prtos-examples/prtos-1.0.0-examples/vx4box-example
+    prtos-examples/prtos-1.0.0-examples/vx4box-example/*
+    prtos-examples/prtos-1.0.0-examples/vx4box-example/integration
+    prtos-examples/prtos-1.0.0-examples/vx4box-example/integration/*
+    prtos-examples/prtos-1.0.0-examples/vx4box-example/linux-partition
+    prtos-examples/prtos-1.0.0-examples/vx4box-example/linux-partition/*
+    prtos-examples/prtos-1.0.0-examples/vx4box-example/linux-partition/root
+    prtos-examples/prtos-1.0.0-examples/vx4box-example/linux-partition/root/*
+    prtos-examples/prtos-1.0.0-examples/vx4box-example/linux-partition/root/etc
+    prtos-examples/prtos-1.0.0-examples/vx4box-example/linux-partition/root/etc/*
+    
+    
+    prtos-examples/prtos-1.0.0-examples/vmware-example
+    prtos-examples/prtos-1.0.0-examples/vmware-example/*
+    prtos-examples/prtos-1.0.0-examples/vmware-example/integration
+    prtos-examples/prtos-1.0.0-examples/vmware-example/integration/*
+    prtos-examples/prtos-1.0.0-examples/vmware-example/linux-partition
+    prtos-examples/prtos-1.0.0-examples/vmware-example/linux-partition/*
+    prtos-examples/prtos-1.0.0-examples/vmware-example/linux-partition/root
+    prtos-examples/prtos-1.0.0-examples/vmware-example/linux-partition/root/*
+    prtos-examples/prtos-1.0.0-examples/vmware-example/linux-partition/root/etc
+    prtos-examples/prtos-1.0.0-examples/vmware-example/linux-partition/root/etc/*
+)
+
+progname=$(basename $0)
+function warn() { echo -e $* 1>&2; }
+function eprint() { warn $progname: $*; exit 1; }
+function usage(){ eprint "usage: $progname [-dc] -t <target_dir>"; }
+
+function install(){
+	if $drflag; then
+		for i in $*; do test -f "$i" && echo $i; done
+	else
+		$(which install) $* # -v
+	fi
+}
+
+# parse options
+args=`getopt -n $prog -o igchdt: -- "$@"`
+if test $? != 0; then
+		usage
+		exit 1
+fi
+
+opmode=install	# operation: install, sha1sum, sha1check
+drflag=false	# dry run
+sha1file=sha1sum.txt
+targetdir=
+
+set -- $(eval echo "$args")
+for i in $*
+do
+	case "$i" in
+	-i)	shift; opmode=install;;
+	-g)	shift; opmode=sha1sum;;
+	-c)	shift; opmode=sha1check;;
+
+	-h)	shift; usage; exit;;
+	-d)	shift; drflag=true;;
+	-t)
+		shift
+		targetdir="$1"; shift
+		;;
+	--)	shift;;
+	esac
+done
+
+if test -z "$targetdir"; then
+	warn option -t targetdir required
+	usage
+fi
+
+case "$opmode" in
+install)
+	# fall through
+	;;
+
+sha1sum)
+	(
+	cd $targetdir;
+	rm -f $sha1file && sha1sum -b `find -type f` > $sha1file;
+	chmod 400 $sha1file
+	)
+	exit
+	;;
+
+sha1check)
+	if ! test -r $targetdir/$sha1file; then
+		echo "LINUX integrity NOT verified: \"$targetdir/$sha1file\" not found"
+		exit
+	else
+		if (cd $targetdir; sha1sum -c $sha1file >/dev/null); then
+			echo "LINUX integrity verified using \"$targetdir/$sha1file\""
+			exit
+		else
+			echo LINUX integrity corrupted: sha1sum missmatch:
+			(cd $targetdir; sha1sum -c $sha1file) | grep -v OK
+			exit -1
+		fi
+	fi
+	;;
+
+*)
+	usage
+	exit -1
+	;;	
+esac
+
+# installation
+
+[ -e $targetdir ] && eprint "Error: target dir $targetdir already exists"
+[ ! -e $srctree ] && eprint "Error: srctree dir $srctree not defined"
+[ ! -e ${srctree}/vmlinux ] && eprint "Error: The Kernel has not been compiled yet.\nPlease run: make"
+
+# TBD pass srctree as source option
+cd $srctree
+
+# LINUX files
+install -m 755 -d $targetdir/
+
+for e in ${LINUX[@]} ${EXAMPLES[@]}; do
+	if test -d $e; then
+		install -m 755 -d $targetdir/$e
+	elif test -x $e; then
+		install -m 755 $e $targetdir/$e
+	else
+		install -m 644 $e $targetdir/$e
+	fi
+done
+
+mv $targetdir/arch/x86/prtos/usr/* $targetdir
+rm -r $targetdir/arch
+
+mv $targetdir/.config $targetdir/common/dot.config
+
+cd - >/dev/null

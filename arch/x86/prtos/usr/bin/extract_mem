@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# $Description:
+# Created by Jordi Sánchez <speiro@ai2.upv.es>
+# Modified by Salva Peiró <speiro@ai2.upv.es> fixes to use Gawk.
+# $Id: extract_mem, 2012/12/04.
+# $License: Read LICENSE.txt file for the license terms.
+#
+
+cat /proc/iomem | grep -v "  " | 
+    gawk -F"-" '{print $1"|"substr($0, index($0,$2))}' | sed 's/ : /|/; s/^[ \t]*//' | 
+    gawk -F"|" '
+BEGIN {
+    lines=0;
+    FS="|"
+}
+
+{
+    lines++;
+    size = strtonum("0x"$2)+1 - strtonum("0x"$1)
+    suffix = "B";
+    kb = int(size / 1024)
+    mb = int(size / (1024*1024))
+    if ((kb * 1024) == size) {
+        size = size / 1024;
+        suffix = "KB"
+        if ((mb * 1024) == size) {
+            size = size / 1024;
+            suffix = "MB"
+        }
+    }
+
+    where = match($0, "RAM")
+    if (where)
+        type = "ram";
+    else
+        type = "rom";
+
+    printf "<Region start=\"0x"$1"\" size=\"%d%s\" type=\""type"\"/>\n", size, suffix
+}
+'

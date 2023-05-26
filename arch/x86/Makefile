@@ -153,6 +153,9 @@ head-y += arch/x86/kernel/init_task.o
 
 libs-y  += arch/x86/lib/
 
+# PRTOS paravirtualization support
+core-$(CONFIG_PRTOS_PARTITION) += arch/x86/prtos/
+
 # See arch/x86/Kbuild for content of core part of the kernel
 core-y += arch/x86/
 

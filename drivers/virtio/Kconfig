@@ -11,7 +11,7 @@ menu "Virtio drivers"
 
 config VIRTIO_PCI
 	tristate "PCI driver for virtio devices (EXPERIMENTAL)"
-	depends on PCI && EXPERIMENTAL
+	depends on PCI && EXPERIMENTAL && !IOX_RING
 	select VIRTIO
 	select VIRTIO_RING
 	---help---

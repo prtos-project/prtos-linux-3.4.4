@@ -37,5 +37,9 @@
 #define VIRTIO_ID_RPMSG		7 /* virtio remote processor messaging */
 #define VIRTIO_ID_SCSI		8 /* virtio scsi */
 #define VIRTIO_ID_9P		9 /* 9p virtio console */
+#define VIRTIO_ID_RTC	   10 /* virtio rtc */
+#define VIRTIO_ID_INPUT    11 /* virtio input device */
+#define VIRTIO_ID_FB       12 /* virtio framebuffer */
+
 
 #endif /* _LINUX_VIRTIO_IDS_H */

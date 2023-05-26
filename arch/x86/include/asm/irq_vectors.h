@@ -166,7 +166,11 @@ static inline int invalid_vm86_irq(int irq)
 		(NR_VECTORS + CPU_VECTOR_LIMIT)  :	\
 		(NR_VECTORS + IO_APIC_VECTOR_LIMIT))
 #else /* !CONFIG_X86_IO_APIC: */
+#ifdef CONFIG_PRTOS_PARTITION
+# define NR_IRQS           24
+#else
 # define NR_IRQS			NR_IRQS_LEGACY
+#endif /* CONFIG_PRTOS_PARTITION */
 #endif
 
 #endif /* _ASM_X86_IRQ_VECTORS_H */

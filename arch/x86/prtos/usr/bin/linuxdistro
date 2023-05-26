@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+# $Description: 
+# Created by Salva Peiró <speiro@ai2.upv.es>
+# $Id: linuxdistro, 2012/11/23.
+# $License: Read LICENSE.txt file for the license terms.
+#
+
+progname=$(basename $0)
+function echo () { `which echo` $*; }
+function warn() { echo -e $* 1>&2; }
+function eprint() { warn $progname: $*; exit 1; }
+function usage(){ warn "usage: $progname <target_dir> <distro_tar>"; }
+
+targetdir=$1; shift
+distrotar=$1; shift
+
+[ -z "$targetdir" ] && usage && eprint "No target installartion provided for the distribution tar" 
+[ -z "$distrotar" ] && usage && eprint "No name provided for the distribution tar"
+
+echo
+echo -e "> Installing LINUX in \"$targetdir\""
+bin/linuxinstall -i -t $targetdir/
+
+echo -e "   - Generating LINUX sha1sums"
+bin/linuxinstall -g -t $targetdir/
+
+cp bin/linux-installer $targetdir/
+
+echo -e "   - Setting read-only (og-w) permission."
+find $targetdir -type d  -exec chmod og-w {} \;
+
+echo
+echo -e "> Generating LINUX distribution \"$distrotar\""
+
+pwd=`pwd`
+(
+	cd $(dirname $targetdir)
+	tar cjf $pwd/$distrotar $(basename $targetdir)
+)
+
+find $(dirname $targetdir) -type d  -exec chmod +w {} \;
+
+echo -e "> Done\n"

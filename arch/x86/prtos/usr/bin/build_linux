@@ -1,0 +1,50 @@
+#!/bin/bash
+
+LINUX_PATH=`dirname $0`/../
+CONFIG_FILE=$LINUX_PATH/common/config.mk
+
+source $CONFIG_FILE
+
+function usage()
+{
+	echo "usage: $(basename $0) [-r <root>] -a <address> -o <output> <vmlinux>";
+}
+
+# Step 0. Get options
+address=0
+root="0"
+output=""
+while getopts r:a:o: c
+do
+    case $c in
+    r)  root="$OPTARG";;
+    a)  address=$OPTARG;;
+    o)  output="$OPTARG";;
+    ?)  usage; exit 2;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+if test $# -eq 0; then
+	usage
+	exit 2
+fi
+
+if test -z $output; then	
+	echo "No output file defined"
+	usage
+	exit 2
+fi
+
+# Step 1. Create the initramfs
+$MKINITRAMFS init initrd.img tmproot
+if test -e $root; then
+	cp -rL $root/* tmproot
+fi
+$MKINITRAMFS build initrd.img tmproot
+
+# Step 2. Create the partition file and append the initrd
+cp $1 $output
+objcopy --add-section=.initramfs=initrd.img.gz --set-section-flags=.initramfs=load,alloc $output 2> /dev/null
+$RELOCATE -i -l $address $output
+rm -f initrd.img.gz

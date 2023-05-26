@@ -1,0 +1,197 @@
+#!/bin/bash
+#
+# $Description: 
+# Created by Salva Peiró <speiro@ai2.upv.es>
+# $Id: linux-installer, 2012/11/23.
+# $License: Read LICENSE.txt file for the license terms.
+#
+
+source common/config.mk
+#source version
+
+progname=$(basename $0)
+autoflag=false
+forceflag=false
+logfile=/tmp/$progname-$$.log
+
+>$logfile
+function warn() {
+	/bin/echo -e $* 1>&2
+	# save warn/errors to logfile
+	/bin/echo -e $* >> $logfile
+}
+
+function quit(){
+    warn ""
+    [ "$1" == 0 ] && warn "Installation completed."
+    [ "$1" != 0 ] && warn "Installation error."
+    exit $1
+}
+
+function eprint() { warn $*; quit 1; }
+function usage(){
+	warn \
+	"usage: $progname [-af] -d <destdir>, with:\n"\
+	"-a) automatic (non-interactive) installer\n"\
+	"-d) destination directory where LINUX will be installed)\n"\
+	"-f) force installation to continue ignoring warnings."
+
+	quit 0
+}
+
+function chkdestdir(){
+    [ -z "$1" ] && eprint "Error Installation path required"
+	
+	if ! $forceflag && test -e $1; then
+		#eprint Error Installation path: $1 exists
+		warn Warning\! Destination path $1 exists. Installing will DESTROY ALL DATA.
+		read -p "Continue with the installation [Y/n]? " INSTALL_CONFIRM
+		[ "$INSTALL_CONFIRM" == "n" ] && eprint "Error Installation aborted"
+	fi
+	
+	[ ! -e $(dirname $1) ] && eprint "Error Installation path: $(dirname $1) does not exist"
+}
+
+function chktoolchain(){
+    if test -z "$1"; then
+        eprint Error Target toolchain required
+    fi
+
+    if ! test -d "$1"; then
+        eprint Error Target toolchain: not a directory
+    fi
+
+    if ! test -d `dirname $1`/prtos || ! test -d `dirname $1`/xal; then
+        eprint Error Target toolchain: directory does not contain a valid PRTOS installation.
+    fi
+}
+
+TARGET_PATH=/opt/linux-sdk
+TARGET_TOOLCHAIN=/opt/prtos-sdk/prtos
+
+if test -d "$PRTOS_PATH"; then
+    TARGET_TOOLCHAIN=${PRTOS_PATH}
+fi
+
+if test -d "$LINUX_PATH"; then
+    TARGET_PATH=${LINUX_PATH}
+fi
+
+function interact()
+{
+
+cat <<EOF
+
+1. Select the directory where LINUX will be installed.
+   The installation directory shall not exist, eg: ${TARGET_PATH}.
+
+2. Select the PRTOS toolchain binary directory (arch $ARCH).
+   The toolchain shall contain the executables suitable for architecture $ARCH.
+
+3. Confirm the installation settings.
+
+Important: you need write permission in the path of the installation directory.
+
+EOF
+
+read -p "Continue with the installation [Y/n]? " INSTALL_CONFIRM
+if test "$INSTALL_CONFIRM" == "n"; then
+	eprint "$progname: Error Installation aborted"
+fi
+
+cat <<EOF
+
+Press [Enter] for the default value or enter a new one.
+Press [TAB] to complete directory names.
+
+EOF
+
+read -e -p "1.- Installation directory [${TARGET_PATH}]: " U_TARGET_PATH
+read -e -p "2.- Path to the PRTOS toolchain [${TARGET_TOOLCHAIN}]: " U_TARGET_TOOLCHAIN
+
+if [ -n "${U_TARGET_PATH}" ]; then 
+    TARGET_PATH=${U_TARGET_PATH}
+fi
+
+if [ -n "${U_TARGET_TOOLCHAIN}" ]; then
+    TARGET_TOOLCHAIN=$U_TARGET_TOOLCHAIN;
+fi
+
+chkdestdir ${TARGET_PATH}
+chktoolchain ${TARGET_TOOLCHAIN}
+
+cat <<EOF
+
+Confirm the Installation settings:
+Selected installation path :  ${TARGET_PATH}
+Selected PRTOS toolchain path :  ${TARGET_TOOLCHAIN}
+
+EOF
+
+read -e -p "3.- Perform the installation using the above settings [Y/n]? " INSTALL_CONFIRM
+if test "$INSTALL_CONFIRM" == "n"; then
+	eprint "Error Installation aborted"
+fi
+
+return 0
+}
+
+warn "Starting LINUX installation."
+warn "Installation log in: " $logfile
+
+# parse options
+args=`getopt -n $prog -o ahd:g:t: -- "$@"`
+if test $? != 0; then
+	usage
+fi
+
+set -- $(eval echo "$args")
+for i in $*
+do
+	case "$i" in
+	-h)	shift; usage; quit;;
+	-a)	shift; autoflag=true;;
+
+	-d)	
+		TARGET_PATH="$2"; shift 2
+		chkdestdir $TARGET_PATH
+		;;
+    -t)
+        TARGET_TOOLCHAIN="$2"; shift 2
+        chktoolchain $TARGET_TOOLCHAIN
+        ;;
+	-f)	shift; forceflag=true;;
+
+	--)	shift;;
+	esac
+done
+
+installok=false
+if $autoflag; then
+	installok=true
+elif interact; then
+	installok=true
+fi
+
+if $installok; then
+	if [ -d $TARGET_PATH ]; then
+		if ! cp -ar `pwd`/* $TARGET_PATH; then
+			eprint "Error Installation path not writable"
+		fi
+	else
+		if ! cp -ar `pwd` $TARGET_PATH; then
+			eprint "Error Installation path not writable"
+		fi
+	fi
+fi
+
+sed -i "s|^LINUX_PATH[ ]*=.*|LINUX_PATH=$TARGET_PATH|" $TARGET_PATH/common/config.mk
+sed -i "s|^PRTOS_PATH[ ]*=.*|PRTOS_PATH=$TARGET_TOOLCHAIN|" $TARGET_PATH/common/config.mk
+
+for i in `find $TARGET_PATH/*examples -name Makefile`; do
+	sed -i "s|^LINUX_PATH[ ]*=.*|LINUX_PATH=${TARGET_PATH}|" $i
+    sed -i "s|^PRTOS_PATH[ ]*=.*|PRTOS_PATH=$TARGET_TOOLCHAIN|" $TARGET_PATH/common/config.mk
+	sed -i "s|XAL_PATH[ ]*=.*|XAL_PATH=$TARGET_TOOLCHAIN/../xal|" $i
+done
+
+quit 0

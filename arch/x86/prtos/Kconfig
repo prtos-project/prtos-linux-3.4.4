@@ -1,0 +1,74 @@
+#
+# This Kconfig describes prtos options
+#
+
+config PRTOS_PARTITION
+	bool "PRTOS partition support"
+	select PARAVIRT
+	select HVC_DRIVER
+
+	depends on X86_32
+	depends on !X86_PAE
+#	depends on !ACPI
+	depends on !CPU_FREQ
+	depends on !CPU_IDLE
+	depends on !SMP
+
+	help
+	  This is the Linux PRTOS port. Enabling this will allow the
+	  kernel to boot in a paravirtualized environment under the
+	  PRTOS hypervisor.
+
+config PRTOS_PATH
+	string "PRTOS-SDK Path: Set the path to the PRTOS x86 SDK"
+    default "/opt/prtos-sdk/prtos"
+
+	depends on PRTOS_PARTITION
+
+	help
+      This is the path to the PRTOS Hypervisor x86 SDK.
+      This option must point to the path where the PRTOS Hypervisor x86 SDK
+      has been installed: eg /path/to/prtos-sdk/prtos.
+
+config PRTOS_IDLE
+    bool "Enter PRTOS on idle"
+    depends on PRTOS_PARTITION
+    help
+      This option modifies the pm_idle function so that it calls prtos_idle_self. This is
+      relevant if a low power idle loop is required or if a Fixed Priority scheduling
+      policy is used.
+
+
+config PRTOS_BOOTCONSOLE
+	bool "Boot Console: Enable a boot console for each partition"
+	default n
+
+	depends on PRTOS_PARTITION
+
+	help
+      This option enables the PRTOS boot console named "prtos" which prints the
+      Linux messages displayed during the boot of the Linux kernel for all the partitions.
+      The messages are printed to the PRTOS console using the prtos_write_console() hypercall,
+      by each partition are prepended with "[PX] ", where "X" is the partition number.
+      This console is useful to configure and debug driver initialization during boot.
+
+      NOTE: This option should be disabled on the final production system.
+
+config PRTOS_DEBUGCONSOLE
+	bool "Debug Console: Enable a debug console for each partition"
+	default n
+
+	depends on PRTOS_PARTITION
+
+config PRTOS_VIRTSRV
+	tristate "PRTOS virtsrv: virtual services support"
+	default y if PRTOS_PARTITION
+
+	depends on PRTOS_PARTITION
+
+	help
+	  This option provides a device named "/dev/prtos_ctl" which can be accessed
+	  by user programs running on partitions (both host and guest) to perform 
+	  PRTOS hypercalls.
+
+source "drivers/iox/Kconfig"

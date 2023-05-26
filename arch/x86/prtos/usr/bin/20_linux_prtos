@@ -1,0 +1,45 @@
+#! /bin/bash
+# grub-mkconfig helper script.
+set -e
+
+getroot()
+{
+rootdev=`mount | grep "/boot" | awk '{print $1}' | awk -F "/" '{print $3}'`
+if [ "$rootdev" = "" ]; then
+	rootdev=`mount | grep "/ " | awk '{print $1}' | awk -F "/" '{print $3}'`
+fi
+string=`blkid | grep "$rootdev"`
+for dev in `ls /dev/disk/by-uuid`; do
+	if `echo ${string} | grep "${dev}" 1>/dev/null 2>&1`
+	then
+		local root=$dev
+		break
+	fi
+done
+echo "$root"
+}
+
+list=`for i in /boot/prtos/*.prtos; do echo $i; done`
+uuid=$(getroot)
+for prtos in $list; do
+echo "Found prtos image: $prtos" >&2
+
+descr=`echo $prtos | sed 's:\(.*\).prtos:\1:'`
+menuentry="prtos application, $descr"
+
+#unit=`printf "%d\n" \'${rootdev:2:1}`
+#base=`printf "%d\n" \'a`
+#unit=`expr $unit - $base`
+#part=${rootdev:3:1}
+#if [ $part > 4 ]; then
+#	part=`expr $part - 4`
+#fi
+
+cat << EOF
+	menuentry '$menuentry' --class prtos --class gnu-linux --class gnu --class os {
+	recordfail
+	search --no-floppy --fs-uuid --set $uuid
+	multiboot $prtos
+	}
+EOF
+done

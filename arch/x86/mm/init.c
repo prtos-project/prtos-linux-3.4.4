@@ -263,9 +263,13 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
 	if (!after_bootmem)
 		find_early_table_space(end, use_pse, use_gbpages);
 
+#ifndef CONFIG_PRTOS_PARTITION
 	for (i = 0; i < nr_range; i++)
 		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
 						   mr[i].page_size_mask);
+#else
+	ret = end;
+#endif
 
 #ifdef CONFIG_X86_32
 	early_ioremap_page_table_range_init();

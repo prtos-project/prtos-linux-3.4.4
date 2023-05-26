@@ -24,6 +24,8 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
 #define __switch_canary_iparam
 #endif	/* CC_STACKPROTECTOR */
 
+#ifndef CONFIG_PRTOS_PARTITION
+
 /*
  * Saving eflags is important. It switches not only IOPL between tasks,
  * it also protects other tasks from NT leaking through sysenter etc.
@@ -75,6 +77,53 @@ do {									\
 		     : /* reloaded segment registers */			\
 			"memory");					\
 } while (0)
+
+#else /* CONFIG_PRTOS_PARTITION */
+
+#define switch_to(prev, next, last)                 \
+do {                                    \
+         unsigned long ebx, ecx, edx, esi, edi, flags;      \
+     flags=arch_local_save_flags();                                \
+     asm volatile("pushl %0\n\t" /* Save flags */ ::"r"(flags));   \
+                                    \
+    asm volatile("pushl %%ebp\n\t"      /* save    EBP   */ \
+             "movl %%esp,%[prev_sp]\n\t"    /* save    ESP   */ \
+             "movl %[next_sp],%%esp\n\t"    /* restore ESP   */ \
+             "movl $1f,%[prev_ip]\n\t"  /* save    EIP   */ \
+             "pushl %[next_ip]\n\t" /* restore EIP   */ \
+             __switch_canary                    \
+             "jmp __switch_to\n"    /* regparm call  */ \
+             "1:\t"                     \
+             "popl %%ebp\n\t"       /* restore EBP   */ \
+                                    \
+             /* output parameters */                \
+             : [prev_sp] "=m" (prev->thread.sp),        \
+               [prev_ip] "=m" (prev->thread.ip),        \
+               "=a" (last),                 \
+                                    \
+               /* clobbered output registers: */        \
+               "=b" (ebx), "=c" (ecx), "=d" (edx),      \
+               "=S" (esi), "=D" (edi)               \
+                                        \
+               __switch_canary_oparam               \
+                                    \
+               /* input parameters: */              \
+             : [next_sp]  "m" (next->thread.sp),        \
+               [next_ip]  "m" (next->thread.ip),        \
+                                        \
+               /* regparm parameters for __switch_to(): */  \
+               [prev]     "a" (prev),               \
+               [next]     "d" (next)                \
+                                    \
+               __switch_canary_iparam               \
+                                    \
+             : /* reloaded segment registers */         \
+            "memory");                  \
+                     asm volatile("popl %0\n\t" :"=r"(flags));         \
+                     arch_local_irq_restore(flags);                     \
+} while (0)
+
+#endif
 
 #else /* CONFIG_X86_32 */
 

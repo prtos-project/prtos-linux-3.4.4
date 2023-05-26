@@ -242,12 +242,15 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
 	jae bad_subarch
 
 	movl pa(subarch_entries)(,%eax,4), %eax
+#ifndef CONFIG_PRTOS_PARTITION
 	subl $__PAGE_OFFSET, %eax
+#endif
 	jmp *%eax
 
 bad_subarch:
 WEAK(lguest_entry)
 WEAK(xen_entry)
+WEAK(prtos_entry)
 	/* Unknown implementation; there's really
 	   nothing we can do at this point. */
 	ud2a
@@ -258,6 +261,7 @@ subarch_entries:
 	.long default_entry		/* normal x86/PC */
 	.long lguest_entry		/* lguest hypervisor */
 	.long xen_entry			/* Xen hypervisor */
+	.long prtos_entry		/* PRTOS hypervisor */
 	.long default_entry		/* Moorestown MID */
 num_subarch_entries = (. - subarch_entries) / 4
 .previous

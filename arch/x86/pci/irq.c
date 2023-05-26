@@ -91,6 +91,7 @@ static inline struct irq_routing_table *pirq_check_routing_table(u8 *addr)
 
 static struct irq_routing_table * __init pirq_find_routing_table(void)
 {
+#ifndef CONFIG_PRTOS_PARTITION
 	u8 *addr;
 	struct irq_routing_table *rt;
 
@@ -105,6 +106,7 @@ static struct irq_routing_table * __init pirq_find_routing_table(void)
 		if (rt)
 			return rt;
 	}
+#endif
 	return NULL;
 }
 
@@ -1191,6 +1193,10 @@ void pcibios_penalize_isa_irq(int irq, int active)
 static int pirq_enable_irq(struct pci_dev *dev)
 {
 	u8 pin;
+
+#ifdef CONFIG_PRTOS_PARTITION
+	return 0;
+#endif
 
 	pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &pin);
 	if (pin && !pcibios_lookup_irq(dev, 1)) {

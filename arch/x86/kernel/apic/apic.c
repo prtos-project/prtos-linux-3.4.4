@@ -13,7 +13,6 @@
  *	Pavel Machek and
  *	Mikael Pettersson	:	PM converted to driver model.
  */
-
 #include <linux/perf_event.h>
 #include <linux/kernel_stat.h>
 #include <linux/mc146818rtc.h>

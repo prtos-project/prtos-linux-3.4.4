@@ -34,7 +34,7 @@ static inline void native_pmd_clear(pmd_t *pmdp)
 static inline void native_pte_clear(struct mm_struct *mm,
 				    unsigned long addr, pte_t *xp)
 {
-	*xp = native_make_pte(0);
+	set_pte(xp, native_make_pte(0));
 }
 
 #ifdef CONFIG_SMP

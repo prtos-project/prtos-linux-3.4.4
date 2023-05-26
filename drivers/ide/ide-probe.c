@@ -1067,7 +1067,7 @@ static void ide_init_port(ide_hwif_t *hwif, unsigned int port,
 	hwif->swdma_mask = d->swdma_mask;
 	hwif->mwdma_mask = d->mwdma_mask;
 	hwif->ultra_mask = d->udma_mask;
-
+	
 	if ((d->host_flags & IDE_HFLAG_NO_DMA) == 0) {
 		int rc;
 
@@ -1102,7 +1102,7 @@ static void ide_init_port(ide_hwif_t *hwif, unsigned int port,
 		else
 			hwif->rqsize = 65536;
 	}
-
+	
 	/* call chipset specific routine for each enabled port */
 	if (d->init_hwif)
 		d->init_hwif(hwif);

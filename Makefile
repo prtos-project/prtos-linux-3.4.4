@@ -1,7 +1,7 @@
 VERSION = 3
 PATCHLEVEL = 4
 SUBLEVEL = 4
-EXTRAVERSION =
+EXTRAVERSION = -prtos
 NAME = Saber-toothed Squirrel
 
 # *DOCUMENTATION*
@@ -1220,6 +1220,17 @@ package-dir	:= $(srctree)/scripts/package
 rpm: include/config/kernel.release FORCE
 	$(Q)$(MAKE) $(build)=$(package-dir) $@
 
+distro-tar:
+	$(Q)$(MAKE) -C arch/x86/prtos/usr ${MAKECMDGOALS}
+
+distro-run:
+	$(Q)$(MAKE) -C arch/x86/prtos/usr ${MAKECMDGOALS}
+
+distro-kernel:
+	$(Q)$(MAKE) -C arch/x86/prtos/usr ${MAKECMDGOALS}
+
+distro-help:
+	$(Q)$(MAKE) -C arch/x86/prtos/usr ${MAKECMDGOALS}
 
 # Brief documentation of the typical targets used
 # ---------------------------------------------------------------------------
@@ -1519,7 +1530,7 @@ endif
 	$(Q)$(MAKE) KBUILD_MODULES=$(if $(CONFIG_MODULES),1)   \
 	$(build)=$(build-dir) $(@:.ko=.o)
 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
-
+	
 # FIXME Should go into a make.lib or something 
 # ===========================================================================
 

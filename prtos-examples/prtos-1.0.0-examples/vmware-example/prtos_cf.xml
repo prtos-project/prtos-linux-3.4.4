@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SystemDescription xmlns="http://www.prtos.org/prtos-1.x" version="1.0.0" name="project">
+    <HwDescription>
+        <MemoryLayout>
+            <Region start="0x0" size="640KB" type="ram"/>
+            <Region start="0xa0000" size="384KB" type="ram"/>
+            <Region start="0x100000" size="1100MB" type="ram"/>
+            <Region start="0xc0000000" size="768MB" type="rom"/>
+        </MemoryLayout>
+        <ProcessorTable>
+            <Processor id="0">
+                <CyclicPlanTable>
+                    <Plan id="0" majorFrame="4ms">
+                        <Slot id="0" start="0s" duration="4ms" partitionId="0"/>
+                    </Plan>
+                </CyclicPlanTable>
+            </Processor>
+        </ProcessorTable>
+        <Devices>
+            <Vga name="Vga"/>
+            <Uart id="0" name="Uart" baudRate="115200"/>
+        </Devices>
+    </HwDescription>
+    <PRTOSHypervisor console="Uart">
+        <PhysicalMemoryArea size="8MB"/>
+    </PRTOSHypervisor>
+    <ResidentSw>
+        <PhysicalMemoryAreas>
+            <Area start="0x40000000" size="31232KB"/>
+        </PhysicalMemoryAreas>
+    </ResidentSw>
+    <PartitionTable>
+        <Partition id="0" name="linux-partition" flags="system fp" console="Uart">
+            <PhysicalMemoryAreas>
+                <!-- linux-partition -->
+                <Area start="0x1800000" size="512MB"/>
+                <!-- pci -->
+                <Area start="0xc0000000" size="768MB" flags="unmapped rom"/>
+                <!-- vga -->
+                <Area start="0xa0000" size="384KB" flags="rom"/>
+            </PhysicalMemoryAreas>
+            <HwResources>
+                <Interrupts lines="9 10 11 14 15 1 12"/>
+                <IoPorts>
+                    <Range base="0xcf8" noPorts="16"/>
+                    <Range base="0x170" noPorts="16"/>
+                    <Range base="0x1f0" noPorts="16"/>
+                    <Range base="0x3f6" noPorts="2"/>
+                    <Range base="0x10c0" noPorts="16"/>
+                    <Range base="0x2000" noPorts="8192"/>
+                    <Range base="0x60" noPorts="8"/>
+                    <Range base="0x3c0" noPorts="32"/>
+                </IoPorts>
+            </HwResources>
+            <HealthMonitor>
+                <Event name="PRTOS_HM_EV_X86_DEVICE_NOT_AVAILABLE" action="PRTOS_HM_AC_PROPAGATE" log="no"/>
+                <Event name="PRTOS_HM_EV_X86_INVALID_OPCODE" action="PRTOS_HM_AC_PROPAGATE" log="no"/>
+                <Event name="PRTOS_HM_EV_X86_GENERAL_PROTECTION" action="PRTOS_HM_AC_PROPAGATE" log="no"/>
+                <Event name="PRTOS_HM_EV_X86_PAGE_FAULT" action="PRTOS_HM_AC_PROPAGATE" log="no"/>
+                <Event name="PRTOS_HM_EV_X86_BREAKPOINT" action="PRTOS_HM_AC_PROPAGATE" log="no"/>
+            </HealthMonitor>
+        </Partition>
+    </PartitionTable>
+    <Channels/>
+</SystemDescription>

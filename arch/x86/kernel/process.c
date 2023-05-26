@@ -676,6 +676,10 @@ static void amd_e400_idle(void)
 
 void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
 {
+#ifdef CONFIG_PRTOS_IDLE
+    extern void prtos_idle(void);
+    pm_idle = prtos_idle;
+#endif
 #ifdef CONFIG_SMP
 	if (pm_idle == poll_idle && smp_num_siblings > 1) {
 		printk_once(KERN_WARNING "WARNING: polling idle and HT enabled,"

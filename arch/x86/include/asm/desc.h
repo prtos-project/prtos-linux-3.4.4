@@ -341,7 +341,7 @@ static inline void _set_gate(int gate, unsigned type, void *addr,
 static inline void set_intr_gate(unsigned int n, void *addr)
 {
 	BUG_ON((unsigned)n > 0xFF);
-	_set_gate(n, GATE_INTERRUPT, addr, 0, 0, __KERNEL_CS);
+	_set_gate(n, GATE_INTERRUPT, addr, 0, 0, __KERNEL_CS|get_kernel_rpl());
 }
 
 extern int first_system_vector;
@@ -371,19 +371,19 @@ static inline void alloc_intr_gate(unsigned int n, void *addr)
 static inline void set_system_intr_gate(unsigned int n, void *addr)
 {
 	BUG_ON((unsigned)n > 0xFF);
-	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS);
+	_set_gate(n, GATE_INTERRUPT, addr, 0x3, 0, __KERNEL_CS|get_kernel_rpl());
 }
 
 static inline void set_system_trap_gate(unsigned int n, void *addr)
 {
 	BUG_ON((unsigned)n > 0xFF);
-	_set_gate(n, GATE_TRAP, addr, 0x3, 0, __KERNEL_CS);
+	_set_gate(n, GATE_TRAP, addr, 0x3, 0, __KERNEL_CS|get_kernel_rpl());
 }
 
 static inline void set_trap_gate(unsigned int n, void *addr)
 {
 	BUG_ON((unsigned)n > 0xFF);
-	_set_gate(n, GATE_TRAP, addr, 0, 0, __KERNEL_CS);
+	_set_gate(n, GATE_TRAP, addr, 0, 0, __KERNEL_CS|get_kernel_rpl());
 }
 
 static inline void set_task_gate(unsigned int n, unsigned int gdt_entry)
@@ -395,13 +395,13 @@ static inline void set_task_gate(unsigned int n, unsigned int gdt_entry)
 static inline void set_intr_gate_ist(int n, void *addr, unsigned ist)
 {
 	BUG_ON((unsigned)n > 0xFF);
-	_set_gate(n, GATE_INTERRUPT, addr, 0, ist, __KERNEL_CS);
+	_set_gate(n, GATE_INTERRUPT, addr, 0, ist, __KERNEL_CS|get_kernel_rpl());
 }
 
 static inline void set_system_intr_gate_ist(int n, void *addr, unsigned ist)
 {
 	BUG_ON((unsigned)n > 0xFF);
-	_set_gate(n, GATE_INTERRUPT, addr, 0x3, ist, __KERNEL_CS);
+	_set_gate(n, GATE_INTERRUPT, addr, 0x3, ist, __KERNEL_CS|get_kernel_rpl());
 }
 
 #endif /* _ASM_X86_DESC_H */
