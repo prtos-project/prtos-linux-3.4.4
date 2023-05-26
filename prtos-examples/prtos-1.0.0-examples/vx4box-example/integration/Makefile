@@ -1,5 +1,5 @@
 PARTITIONS=../linux-partition/linux-partition.xef 
-XAL_PATH=/home/tom/Public/prtos-sdk/xal
+XAL_PATH=/home/prtos/prtos-sdk/xal
 PACK_ARGS=-h $(PRTOSCORE):prtos_cf.xef  \
 	-p 0:../linux-partition/linux-partition.xef:../linux-partition/cmdline.xef
 all: resident_sw

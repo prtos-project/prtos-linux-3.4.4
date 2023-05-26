@@ -1,0 +1,51 @@
+#!/bin/sh
+# Configure the devices provided by prtos hypervisor on /dev
+
+nopart=0
+partid=0
+
+ecmd() { ! $* && echo "failed: $*"; }
+quit() { false; [ $$ -ne 1 ]  && exit; }
+error(){ echo $*; quit; }
+
+prtos_devices(){
+	devname=$1/prtos_ctl
+	if [ ! -e $devname ]; then
+		ecmd mknod $devname c 10 63
+	fi
+	ecmd chown 0:4 $devname
+	ecmd chmod 660 $devname
+
+	if ! grep -q xmcli /proc/devices; then
+		return
+	fi
+	
+	for i in `seq 0 1 $nopart`; do
+		devname=$1/xmcli$i
+		major=`sed -n 's/xmcli//p'  /proc/devices`
+		if [ ! -e $devname ]; then
+			ecmd mknod $devname c $major $i
+		fi
+		ecmd chown 0:4 $devname
+		ecmd chmod 660 $devname
+	done
+}
+
+#if ! zcat /proc/config.gz | grep -q 'PRTOS.*_PARTITION'; then
+#    echo
+#    echo "prtos_init: Detect Linux running on prtos partition ...                 [FAILED]"
+#    quit
+#fi
+
+if [ ! -d $1 ]; then
+    error "usage: prtos_init /newroot"
+fi
+
+#if [ -d $1/dev ]; then
+#	prtos_devices $1/dev
+#fi
+
+#if [ -d $1/lib/udev/devices ]; then
+#	prtos_devices $1/lib/udev/devices
+#fi
+

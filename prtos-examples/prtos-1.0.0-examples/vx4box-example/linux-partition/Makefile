@@ -1,5 +1,5 @@
 PARTITION=linux-partition
-LINUX_PATH=/opt/linux-sdk
+LINUX_PATH=/home/prtos/linux-sdk
 ID=0
 CMDLINE=cmdline
 
