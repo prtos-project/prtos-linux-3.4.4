@@ -7,4 +7,4 @@ include $(LINUX_PATH)/common/config.mk
 $(if $(PRTOS_PATH),, \
 	$(warning "The configuration variable PRTOS_PATH is not set,") \
 	$(error "Please, define PRTOS_PATH"))
-include $(XAL_PATH)/common/rules.mk
+include $(BAIL_PATH)/common/rules.mk

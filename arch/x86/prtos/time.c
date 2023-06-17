@@ -54,7 +54,7 @@ static void prtos_pit_clockevent_set_mode(enum clock_event_mode mode,
 static int prtos_pit_clockevent_set_next_event(unsigned long delta,
 					struct clock_event_device *evt)
 {
-	prtosTime_t t;
+	prtos_time_t t;
 
 	/* Please wake us this far in the future. */
 	prtos_get_time(PRTOS_HW_CLOCK, &t);
@@ -79,13 +79,13 @@ static struct clock_event_device prtos_pit_clockevent = {
 };
 
 static cycle_t prtos_pit_clock_read(struct clocksource *cs) {
-	prtosTime_t t;
+	prtos_time_t t;
 	prtos_get_time(PRTOS_HW_CLOCK, &t);
 	return t*1000ULL;
 }
 
 u64 prtos_sched_clock(void) {
-    prtosTime_t t;
+    prtos_time_t t;
     prtos_get_time(PRTOS_HW_CLOCK, &t);
     return t*1000ULL;
 }
@@ -110,7 +110,7 @@ static void prtos_pit_time_irq(int vector, void * data) {
 }
 
 static unsigned long virt_get_tsc_khz(void) {
-	return prtosPartCtrTab->cpu_khz;
+	return prtos_part_ctr_table->cpu_khz;
 }
 
 static unsigned long virt_get_wallclock(void) {

@@ -25,9 +25,9 @@ run.x86:
 clean:
 	@for dir in $(PARTITIONS) ; do \
 		$(MAKE) -C $$dir $(MAKECMDGOALS); \
-		$(RM) $$dir/*.xef; \
+		$(RM) $$dir/*.pef; \
 	done
 	@$(MAKE) -C integration ${MAKECMDGOALS}
-	@$(RM) integration/*.xef integration/resident_sw* resident_sw*
+	@$(RM) integration/*.pef integration/resident_sw* resident_sw*
 	@$(RM) *.iso
 

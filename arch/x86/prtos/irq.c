@@ -52,7 +52,7 @@ static inline void prtos_pic_unmask_irq(struct irq_data *data)
 }
 
 static inline int prtos_are_irqs_enabled(void) {
-    return prtosPartCtrTab->iFlags&_CPU_FLAG_IF;
+    return prtos_part_ctr_table->iflags&_CPU_FLAG_IF;
 }
 
 static struct irq_chip prtos_pic_chip = {
@@ -83,7 +83,7 @@ static struct irq_chip prtos_pic_chip = {
 
 static inline unsigned long prtos_save_fl(void)
 {
-    return prtosPartCtrTab->iFlags&_CPU_FLAG_IF;
+    return prtos_part_ctr_table->iflags&_CPU_FLAG_IF;
 }
 
 static inline void prtos_restore_fl(unsigned long flags)
@@ -308,9 +308,9 @@ static void __init prtos_init_IRQ(void)
         if (i != SYSCALL_VECTOR)
             set_intr_gate(i, interrupt[i - FIRST_EXTERNAL_VECTOR]);
     }
-	prtos_x86_update_idt(SYSCALL_VECTOR, &((struct x86Gate *)prtos_get_PCT()->arch.idtr.linearBase)[SYSCALL_VECTOR]);
+	prtos_x86_update_idt(SYSCALL_VECTOR, &((struct x86_gate *)prtos_get_pct()->arch.idtr.linear_base)[SYSCALL_VECTOR]);
 
-	irq_mask = prtosPartCtrTab->hwIrqs;
+	irq_mask = prtos_part_ctr_table->hw_irqs;
 	while (irq_mask) {
 	    i = __ffs(irq_mask);
         irq_set_chip_and_handler_name(i, &prtos_pic_chip, handle_level_irq, "level");

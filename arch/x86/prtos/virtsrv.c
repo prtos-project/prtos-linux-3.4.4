@@ -85,7 +85,7 @@ static long virtsrv_ioctl(struct file *filp, unsigned int cmd, unsigned long arg
 		break;
 
 	case get_time_nr:
-		ret = prtos_get_time(a[0], (prtosTime_t*)a[1]);
+		ret = prtos_get_time(a[0], (prtos_time_t*)a[1]);
 		break;
 	case set_timer_nr:
 		ret = prtos_set_timer(a[0], a[1], a[2]);

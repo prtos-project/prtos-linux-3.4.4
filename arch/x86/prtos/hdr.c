@@ -32,16 +32,16 @@
 prtos_u8_t _page_table[PAGE_SIZE*(NO_PGTS+1)] __attribute__((aligned(PAGE_SIZE))) __attribute__ ((section(".bss.noinit")));
 static prtos_u8_t cmdline[CMDLINE_SIZE] __initdata;
 
-__attribute__((section(".prtos_image_hdr"))) struct prtos_image_hdr __prtos_image_hdr __PRTOSIHDR = {
+__attribute__((section(".prtos_image_hdr"))) struct prtos_image_hdr __prtos_image_hdr __PRTOS_IMAGE_HDR = {
     .start_signature=PRTOS_EXEC_PARTITION_MAGIC,
     .compilation_prtos_abi_version=PRTOS_SET_VERSION(PRTOS_ABI_VERSION, PRTOS_ABI_SUBVERSION, PRTOS_ABI_REVISION),
     .compilation_prtos_api_version=PRTOS_SET_VERSION(PRTOS_API_VERSION, PRTOS_API_SUBVERSION, PRTOS_API_REVISION),
-    .page_table=(prtosAddress_t)__pa(_page_table),
+    .page_table=(prtos_address_t)__pa(_page_table),
     .page_table_size=PAGE_SIZE*(NO_PGTS+1),
     .num_of_custom_files=1,
     .custom_file_table={
-        [0]=(struct xef_custom_file) {
-            .sAddr=__pa(cmdline),
+        [0]=(struct pef_custom_file) {
+            .start_addr=__pa(cmdline),
             .size=CMDLINE_SIZE,
         },
     },
@@ -69,18 +69,18 @@ __attribute__((section(".prtos_boot_params"))) struct boot_params prtos_boot_par
     .e820_entries = 0,
 };
 
-notrace asmlinkage void __prtosinit prtos_setup_vmmap(prtosAddress_t *pgTab) {
+notrace asmlinkage void __prtosinit prtos_setup_vmmap(prtos_address_t *pg_table) {
     int i, e, k, ret;
     prtos_u32_t __mc_up32_batch[32][4];
 
     k = 0;
     i = __PAGE_OFFSET >> 22;
     for (e = 0; (e < i) && (e + i < 1024); e++) {
-        if (pgTab[e]) {
+        if (pg_table[e]) {
             __mc_up32_batch[k][0] = update_page32_nr;         /* NoHyp */
             __mc_up32_batch[k][1] = 2;                          /* NoArgs */
-            __mc_up32_batch[k][2] = (prtosAddress_t)&pgTab[e+i];   /* A0 */
-            __mc_up32_batch[k][3] = pgTab[e];                   /* A1 */
+            __mc_up32_batch[k][2] = (prtos_address_t)&pg_table[e+i];   /* A0 */
+            __mc_up32_batch[k][3] = pg_table[e];                   /* A1 */
             ++k;
         }
         if (k >= 32) {

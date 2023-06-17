@@ -113,14 +113,14 @@ static int __init romchecksum(const unsigned char *rom, unsigned long length)
 }
 
 __init static int rom_available(unsigned long start, unsigned long end) {
-    struct prtos_physical_mem_map *memMap;
+    struct prtos_physical_mem_map *mem_map;
     int e;
     unsigned long size;
 
     size = end - start + 1;
-    memMap = prtosGetMemMap();
-    for (e = 0; e<prtosPartCtrTab->noPhysicalMemAreas; e++) {
-        if ((memMap[e].startAddr <= start) && ((start+size) <= (memMap[e].startAddr+memMap[e].size))) {
+    mem_map = prtos_get_mem_map();
+    for (e = 0; e<prtos_part_ctr_table->num_of_physical_mem_areas; e++) {
+        if ((mem_map[e].start_addr <= start) && ((start+size) <= (mem_map[e].start_addr+mem_map[e].size))) {
             return 1;
         }
     }

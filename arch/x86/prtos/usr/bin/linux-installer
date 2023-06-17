@@ -61,7 +61,7 @@ function chktoolchain(){
         eprint Error Target toolchain: not a directory
     fi
 
-    if ! test -d `dirname $1`/prtos || ! test -d `dirname $1`/xal; then
+    if ! test -d `dirname $1`/prtos || ! test -d `dirname $1`/bail; then
         eprint Error Target toolchain: directory does not contain a valid PRTOS installation.
     fi
 }
@@ -191,7 +191,7 @@ sed -i "s|^PRTOS_PATH[ ]*=.*|PRTOS_PATH=$TARGET_TOOLCHAIN|" $TARGET_PATH/common/
 for i in `find $TARGET_PATH/*examples -name Makefile`; do
 	sed -i "s|^LINUX_PATH[ ]*=.*|LINUX_PATH=${TARGET_PATH}|" $i
     sed -i "s|^PRTOS_PATH[ ]*=.*|PRTOS_PATH=$TARGET_TOOLCHAIN|" $TARGET_PATH/common/config.mk
-	sed -i "s|XAL_PATH[ ]*=.*|XAL_PATH=$TARGET_TOOLCHAIN/../xal|" $i
+	sed -i "s|BAIL_PATH[ ]*=.*|BAIL_PATH=$TARGET_TOOLCHAIN/../bail|" $i
 done
 
 quit 0

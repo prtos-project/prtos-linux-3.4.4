@@ -64,19 +64,19 @@ static inline void virt_cpuid(unsigned int *ax, unsigned int *bx, unsigned int *
 static inline void virt_load_tr_desc(void) {
 	struct tss_struct *t = &per_cpu(init_tss, get_cpu());
 	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE) {
-	    if (prtos_x86_load_tss((struct x86Tss *)t) < 0)
+	    if (prtos_x86_load_tss((struct x86_tss *)t) < 0)
 			BUG();
 	} else {
-	    prtos_lazy_x86_load_tss((struct x86Tss *)t);
+	    prtos_lazy_x86_load_tss((struct x86_tss *)t);
 	}
 }
 
 static inline unsigned long virt_read_cr0(void) {
-	return prtosPartCtrTab->arch.cr0;
+	return prtos_part_ctr_table->arch.cr0;
 }
 
 static inline unsigned long virt_read_cr4(void) {
-	return prtosPartCtrTab->arch.cr4;	
+	return prtos_part_ctr_table->arch.cr4;	
 }
 
 static inline void virt_write_cr0(unsigned long val) {
@@ -109,9 +109,9 @@ static inline void virt_wbinvd(void) {
 
 static inline void virt_load_idt(const struct desc_ptr *desc) {
     if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE) {
-        prtos_x86_load_idtr((struct x86DescReg *)desc);
+        prtos_x86_load_idtr((struct x86_desc_reg *)desc);
     } else {
-        prtos_lazy_x86_load_idtr((struct x86DescReg *)desc);
+        prtos_lazy_x86_load_idtr((struct x86_desc_reg *)desc);
     }
 }
 
@@ -121,10 +121,10 @@ static inline void virt_clts(void) {
 
 static inline void virt_load_gdt(const struct desc_ptr *desc) {
 	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE) {
-	    if (prtos_x86_load_gdt((struct x86DescReg *)desc) < 0)
+	    if (prtos_x86_load_gdt((struct x86_desc_reg *)desc) < 0)
 			BUG();
 	} else {
-	    prtos_lazy_x86_load_gdt((struct x86DescReg *)desc);
+	    prtos_lazy_x86_load_gdt((struct x86_desc_reg *)desc);
 	}
 }
 
@@ -137,10 +137,10 @@ static inline void virt_load_tls(struct thread_struct *t, unsigned int cpu) {
 	for (i = 0; i < GDT_ENTRY_TLS_ENTRIES; i++) {
 		gdt[GDT_ENTRY_TLS_MIN + i] = t->tls_array[i];
 		if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE) {
-			if (prtos_x86_update_gdt(GDT_ENTRY_TLS_MIN + i, (struct x86Desc *)&gdt[GDT_ENTRY_TLS_MIN + i]) < 0)
+			if (prtos_x86_update_gdt(GDT_ENTRY_TLS_MIN + i, (struct x86_desc *)&gdt[GDT_ENTRY_TLS_MIN + i]) < 0)
 				BUG();
 		} else {
-		    prtos_lazy_x86_update_gdt(GDT_ENTRY_TLS_MIN + i, (struct x86Desc *)&gdt[GDT_ENTRY_TLS_MIN + i]);
+		    prtos_lazy_x86_update_gdt(GDT_ENTRY_TLS_MIN + i, (struct x86_desc *)&gdt[GDT_ENTRY_TLS_MIN + i]);
 		}
 	}
 }
@@ -148,11 +148,11 @@ static inline void virt_load_tls(struct thread_struct *t, unsigned int cpu) {
 static inline void virt_write_gdt_entry(struct desc_struct *gdt, int entry, const void *desc, int type)
 {
     if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE) {
-        if (prtos_x86_update_gdt(entry, (struct x86Desc *)gdt) < 0) {
+        if (prtos_x86_update_gdt(entry, (struct x86_desc *)gdt) < 0) {
             BUG();
         }
     } else {
-        prtos_lazy_x86_update_gdt(entry, (struct x86Desc *)gdt);
+        prtos_lazy_x86_update_gdt(entry, (struct x86_desc *)gdt);
     }
     native_write_gdt_entry(gdt, entry, desc, type);
 }
@@ -161,10 +161,10 @@ static inline void virt_write_idt_entry(gate_desc *idt, int entry, const gate_de
 {
     if (entry >= 0x30 && entry < IDT_ENTRIES) {
         if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE) {
-            if (prtos_x86_update_idt(entry, (struct x86Gate *)gate) < 0)
+            if (prtos_x86_update_idt(entry, (struct x86_gate *)gate) < 0)
                 BUG();
         } else {
-            prtos_lazy_x86_update_idt(entry, (struct x86Gate *)gate);
+            prtos_lazy_x86_update_idt(entry, (struct x86_gate *)gate);
         }
     }
     native_write_idt_entry(idt, entry, gate);

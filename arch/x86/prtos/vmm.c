@@ -84,7 +84,7 @@ static inline void __set_page_type(unsigned long addr, int type) {
 
 	pgte = ((u32)__va(addr)&PGT_MASK)>>PAGE_SHIFT;
 	pgde = (u32)__va(addr)>>PGDIR_SHIFT;
-	pgd = (u32*)((prtosPartCtrTab->arch.cr3&PAGE_MASK)+__PAGE_OFFSET);
+	pgd = (u32*)((prtos_part_ctr_table->arch.cr3&PAGE_MASK)+__PAGE_OFFSET);
     pgt = (u32*)(pgd[pgde]&PAGE_MASK);
     oval = ((u32 *)__va(pgt))[pgte];
 
@@ -127,11 +127,11 @@ static inline void virt_flush_tlb_single(unsigned long x) {
 }
 
 static inline unsigned long virt_read_cr2(void) {
-	return prtosPartCtrTab->arch.cr2;	
+	return prtos_part_ctr_table->arch.cr2;	
 }
 
 static inline unsigned long virt_read_cr3(void) {
-	return prtosPartCtrTab->arch.cr3;
+	return prtos_part_ctr_table->arch.cr3;
 }
 
 static inline void virt_write_cr3(unsigned long cr3) {
@@ -282,13 +282,13 @@ static const struct pv_mmu_ops prtos_mmu_ops __initdata = {
 };
 
 __init void init_vmm_paravirt(unsigned long *pgd, int noPg) {
-    struct prtos_physical_mem_map  *memMap;
+    struct prtos_physical_mem_map  *mem_map;
 	extern unsigned long PrtosPcRom[];
 	extern struct prtos_image_hdr __prtos_image_hdr;
 	unsigned long *pgt, page, addr;
 	int e, i, noRsv;
 
-	memMap = (struct prtosPhysicalMemMap *)((prtosAddress_t)prtosPartCtrTab+sizeof(part_ctl_table_t));
+	mem_map = (struct prtos_physical_mem_map *)((prtos_address_t)prtos_part_ctr_table+sizeof(partition_control_table_t));
 
 	for (e=0; e<(__PAGE_OFFSET>>PGDIR_SHIFT); e++)
 		if (pgd[e]&_PAGE_PRESENT) {
@@ -296,9 +296,9 @@ __init void init_vmm_paravirt(unsigned long *pgd, int noPg) {
 		}
 	virt_flush_batch();
 
-	for (e=0, max_pfn_mapped=0; e<prtosPartCtrTab->noPhysicalMemAreas; e++)
-		if (max_pfn_mapped < (memMap[e].startAddr+memMap[e].size))
-			max_pfn_mapped = memMap[e].startAddr+memMap[e].size;
+	for (e=0, max_pfn_mapped=0; e<prtos_part_ctr_table->num_of_physical_mem_areas; e++)
+		if (max_pfn_mapped < (mem_map[e].start_addr+mem_map[e].size))
+			max_pfn_mapped = mem_map[e].start_addr+mem_map[e].size;
 
 	memcpy(initial_page_table, pgd, PAGE_SIZE);
 	memcpy(swapper_pg_dir, pgd, PAGE_SIZE);
@@ -337,7 +337,7 @@ __init void init_vmm_paravirt(unsigned long *pgd, int noPg) {
 
 	memblock_reserve(__pa(pgd), (noRsv+1)*PAGE_SIZE);
 	memblock_reserve((u32)(&__prtos_image_hdr), sizeof(__prtos_image_hdr));
-	memblock_reserve((u32)__pa(&libPrtosParams), sizeof(struct libPrtosParams));
+	memblock_reserve((u32)__pa(&lib_prtos_params), sizeof(struct lib_prtos_params));
 
 	virt_flush_batch();
 	max_pfn_mapped >>= PAGE_SHIFT;	

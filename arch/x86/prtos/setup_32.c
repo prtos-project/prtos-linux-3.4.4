@@ -34,9 +34,9 @@
 #include <asm/pgtable.h>
 #include <asm/setup.h>
 
-part_ctl_table_t *prtosPartCtrTab;
+partition_control_table_t *prtos_part_ctr_table;
 #if 0
-EXPORT_SYMBOL(prtosPartCtrTab);
+EXPORT_SYMBOL(prtos_part_ctr_table);
 EXPORT_SYMBOL(libXmParams);
 EXPORT_SYMBOL(prtos_get_physmem_map);
 #endif
@@ -88,26 +88,26 @@ static void flags_to_str(char *buf, prtos_u32_t flags) {
 }
 
 static int prtos_procinfo(char *buf, char **start, off_t offset, int count, int *eof, void *data) {
-    struct prtos_physical_mem_map *memMap;
+    struct prtos_physical_mem_map *mem_map;
     int e, len = 0;
     int limit = count - 80;
     unsigned int irq_mask;
     char flags[256];
 
     len += sprintf(buf+len, "PRTOS:%s\n", CONFIG_KERNELVERSION);
-    len += sprintf(buf+len, "Id:%d\n", PCT_GET_PARTITION_ID(prtosPartCtrTab));
-    len += sprintf(buf+len, "Name:%s\n", prtosPartCtrTab->name);
-    memMap = prtosGetMemMap();
-    for (e = 0; e<prtosPartCtrTab->noPhysicalMemAreas; e++) {
-        flags_to_str(flags, memMap[e].flags);
-        len += sprintf(buf+len, "Area:0x%08x:%d:%s\n", memMap[e].startAddr, memMap[e].size, flags);
+    len += sprintf(buf+len, "Id:%d\n", PCT_GET_PARTITION_ID(prtos_part_ctr_table));
+    len += sprintf(buf+len, "Name:%s\n", prtos_part_ctr_table->name);
+    mem_map = prtos_get_mem_map();
+    for (e = 0; e<prtos_part_ctr_table->num_of_physical_mem_areas; e++) {
+        flags_to_str(flags, mem_map[e].flags);
+        len += sprintf(buf+len, "Area:0x%08x:%d:%s\n", mem_map[e].start_addr, mem_map[e].size, flags);
         if (len >= limit) {
             goto out;
         }
     }
 
     sprintf(buf+len, "Interrupts:");
-    irq_mask = prtosPartCtrTab->hwIrqs;
+    irq_mask = prtos_part_ctr_table->hw_irqs;
     while (irq_mask) {
         e = __ffs(irq_mask);
         len += sprintf(buf+len, " %d", e);
@@ -128,27 +128,27 @@ static int __init create_prtos_procinfo(void)
 late_initcall(create_prtos_procinfo);
 
 int is_io_server(void) {
-    return (PCT_GET_PARTITION_ID(prtosPartCtrTab) == 0);
+    return (PCT_GET_PARTITION_ID(prtos_part_ctr_table) == 0);
 }
 EXPORT_SYMBOL(is_io_server);
 
 static __init char *virt_memory_setup(void) {
-	struct prtos_physical_mem_map *memMap;
+	struct prtos_physical_mem_map *mem_map;
 	int e, flags;
 
 	flags = PRTOS_MEM_AREA_FLAG0|PRTOS_MEM_AREA_FLAG1|PRTOS_MEM_AREA_FLAG2|PRTOS_MEM_AREA_FLAG3|PRTOS_MEM_AREA_ROM;
-	memMap = prtos_get_partition_mmap();
-	for (e = 0; e<prtosPartCtrTab->noPhysicalMemAreas; e++) {
-		if (!(memMap[e].flags & flags))
-			e820_add_region(memMap[e].startAddr, memMap[e].size, E820_RAM);
+	mem_map = prtos_get_partition_mmap();
+	for (e = 0; e<prtos_part_ctr_table->num_of_physical_mem_areas; e++) {
+		if (!(mem_map[e].flags & flags))
+			e820_add_region(mem_map[e].start_addr, mem_map[e].size, E820_RAM);
 #ifdef CONFIG_IOX
-		if (memMap[e].flags & PRTOS_MEM_AREA_FLAG3) {
+		if (mem_map[e].flags & PRTOS_MEM_AREA_FLAG3) {
 		    if (is_io_server()) {
-		        ioxbus_add_bus((void *)memMap[e].startAddr, memMap[e].size);
+		        ioxbus_add_bus((void *)mem_map[e].start_addr, mem_map[e].size);
 		    }
 #ifdef CONFIG_IOX_RING
 		    if (!is_io_server()) {
-		        ioxring_set_bus((void *)memMap[e].startAddr, memMap[e].size);
+		        ioxring_set_bus((void *)mem_map[e].start_addr, mem_map[e].size);
 		    }
 #endif
 		}
@@ -231,9 +231,9 @@ EXPORT_SYMBOL(prtos_idle);
 
 asmlinkage void __init prtos_start_kernel(void) {
 
-	prtosPartCtrTab = prtos_get_PCT();
-	BUG_ON(!prtosPartCtrTab);
-	BUG_ON(prtosPartCtrTab->magic != KTHREAD_MAGIC);
+	prtos_part_ctr_table = prtos_get_pct();
+	BUG_ON(!prtos_part_ctr_table);
+	BUG_ON(prtos_part_ctr_table->magic != KTHREAD_MAGIC);
 
 	pv_info = prtos_pv_info;
 	pv_init_ops.patch = virt_patch;
