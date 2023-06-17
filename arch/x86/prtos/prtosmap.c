@@ -44,9 +44,9 @@
 #define PRTOSMAP_AREA_MAPPED (1<<1)
 
 static unsigned char *prtosmap_status;
-static struct prtosPhysicalMemMap *prtosMemMap;
+static struct prtos_physical_mem_map *prtosMemMap;
 
-static struct prtosPhysicalMemMap *reserve_area(unsigned long flag)
+static struct prtos_physical_mem_map *reserve_area(unsigned long flag)
 {
     int i;
 
@@ -123,7 +123,7 @@ long prtosmap_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 int prtosmap_mmap(struct file *file, struct vm_area_struct *vma)
 {
     unsigned long start = vma->vm_start;
-    struct prtosPhysicalMemMap *memArea;
+    struct prtos_physical_mem_map *memArea;
 
     memArea = file->private_data;
     if (memArea == NULL) {

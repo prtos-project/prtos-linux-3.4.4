@@ -54,7 +54,7 @@
    machines */
 typedef struct boot_info_map_entry
 {
-    __u32       physAddr;                /* Physical starting address */
+    __u32       phys_addr;                /* Physical starting address */
     __u32       size;                    /* Size in bytes */
 } boot_info_map_entry_t;
 

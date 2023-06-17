@@ -282,13 +282,13 @@ static const struct pv_mmu_ops prtos_mmu_ops __initdata = {
 };
 
 __init void init_vmm_paravirt(unsigned long *pgd, int noPg) {
-    struct prtosPhysicalMemMap *memMap;
+    struct prtos_physical_mem_map  *memMap;
 	extern unsigned long PrtosPcRom[];
-	extern struct prtosImageHdr __prtosImageHdr;
+	extern struct prtos_image_hdr __prtos_image_hdr;
 	unsigned long *pgt, page, addr;
 	int e, i, noRsv;
 
-	memMap = (struct prtosPhysicalMemMap *)((prtosAddress_t)prtosPartCtrTab+sizeof(partitionControlTable_t));
+	memMap = (struct prtosPhysicalMemMap *)((prtosAddress_t)prtosPartCtrTab+sizeof(part_ctl_table_t));
 
 	for (e=0; e<(__PAGE_OFFSET>>PGDIR_SHIFT); e++)
 		if (pgd[e]&_PAGE_PRESENT) {
@@ -336,7 +336,7 @@ __init void init_vmm_paravirt(unsigned long *pgd, int noPg) {
 		}
 
 	memblock_reserve(__pa(pgd), (noRsv+1)*PAGE_SIZE);
-	memblock_reserve((u32)(&__prtosImageHdr), sizeof(__prtosImageHdr));
+	memblock_reserve((u32)(&__prtos_image_hdr), sizeof(__prtos_image_hdr));
 	memblock_reserve((u32)__pa(&libPrtosParams), sizeof(struct libPrtosParams));
 
 	virt_flush_batch();

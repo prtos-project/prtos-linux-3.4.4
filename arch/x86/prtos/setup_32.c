@@ -34,7 +34,7 @@
 #include <asm/pgtable.h>
 #include <asm/setup.h>
 
-partitionControlTable_t *prtosPartCtrTab;
+part_ctl_table_t *prtosPartCtrTab;
 #if 0
 EXPORT_SYMBOL(prtosPartCtrTab);
 EXPORT_SYMBOL(libXmParams);
@@ -88,7 +88,7 @@ static void flags_to_str(char *buf, prtos_u32_t flags) {
 }
 
 static int prtos_procinfo(char *buf, char **start, off_t offset, int count, int *eof, void *data) {
-    struct prtosPhysicalMemMap *memMap;
+    struct prtos_physical_mem_map *memMap;
     int e, len = 0;
     int limit = count - 80;
     unsigned int irq_mask;
@@ -133,7 +133,7 @@ int is_io_server(void) {
 EXPORT_SYMBOL(is_io_server);
 
 static __init char *virt_memory_setup(void) {
-	struct prtosPhysicalMemMap *memMap;
+	struct prtos_physical_mem_map *memMap;
 	int e, flags;
 
 	flags = PRTOS_MEM_AREA_FLAG0|PRTOS_MEM_AREA_FLAG1|PRTOS_MEM_AREA_FLAG2|PRTOS_MEM_AREA_FLAG3|PRTOS_MEM_AREA_ROM;
@@ -245,7 +245,7 @@ asmlinkage void __init prtos_start_kernel(void) {
 
 	init_cpu_paravirt();
 	init_irq_paravirt();
-	init_vmm_paravirt(__va(prtosImageHdr.pageTable), prtosImageHdr.pageTableSize/PAGE_SIZE);
+	init_vmm_paravirt(__va(prtos_image_hdr.page_table), prtos_image_hdr.page_table_size/PAGE_SIZE);
 	init_time_paravirt();
 	init_roms_paravirt();
 

@@ -37,8 +37,8 @@
 
 #define __prtosinit    __attribute__((section(".prtosinit.text")))
 
-extern partitionControlTable_t *prtosPartCtrTab;
-extern struct prtosImageHdr prtosImageHdr;
+extern part_ctl_table_t *prtosPartCtrTab;
+extern struct prtos_image_hdr prtos_image_hdr;
 
 extern void prtos_init_boot_params(void);
 extern void init_irq_paravirt(void);
@@ -54,7 +54,7 @@ extern int xprintk(const char *fmt, ...);
 extern int is_io_server(void);
 
 static inline struct prtosPhysicalMemMap *prtosGetMemMap(void) {
-    return (struct prtosPhysicalMemMap *)((prtosAddress_t)prtosPartCtrTab+sizeof(partitionControlTable_t));
+    return (struct prtosPhysicalMemMap *)((prtosAddress_t)prtosPartCtrTab+sizeof(part_ctl_table_t));
 }
 
 #endif /*__ASSEMBLY__*/

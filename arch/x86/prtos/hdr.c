@@ -29,23 +29,23 @@
 #define NO_PGTS         256
 #define CMDLINE_SIZE    PAGE_SIZE
 
-prtos_u8_t _pageTable[PAGE_SIZE*(NO_PGTS+1)] __attribute__((aligned(PAGE_SIZE))) __attribute__ ((section(".bss.noinit")));
+prtos_u8_t _page_table[PAGE_SIZE*(NO_PGTS+1)] __attribute__((aligned(PAGE_SIZE))) __attribute__ ((section(".bss.noinit")));
 static prtos_u8_t cmdline[CMDLINE_SIZE] __initdata;
 
-__attribute__((section(".prtosImageHdr"))) struct prtosImageHdr __prtosImageHdr __PRTOSIHDR = {
-    .sSignature=PRTOSEF_PARTITION_MAGIC,
-    .compilationPrtosAbiVersion=PRTOS_SET_VERSION(PRTOS_ABI_VERSION, PRTOS_ABI_SUBVERSION, PRTOS_ABI_REVISION),
-    .compilationPrtosApiVersion=PRTOS_SET_VERSION(PRTOS_API_VERSION, PRTOS_API_SUBVERSION, PRTOS_API_REVISION),
-    .pageTable=(prtosAddress_t)__pa(_pageTable),
-    .pageTableSize=PAGE_SIZE*(NO_PGTS+1),
-    .noCustomFiles=1,
-    .customFileTab={
-        [0]=(struct xefCustomFile) {
+__attribute__((section(".prtos_image_hdr"))) struct prtos_image_hdr __prtos_image_hdr __PRTOSIHDR = {
+    .start_signature=PRTOS_EXEC_PARTITION_MAGIC,
+    .compilation_prtos_abi_version=PRTOS_SET_VERSION(PRTOS_ABI_VERSION, PRTOS_ABI_SUBVERSION, PRTOS_ABI_REVISION),
+    .compilation_prtos_api_version=PRTOS_SET_VERSION(PRTOS_API_VERSION, PRTOS_API_SUBVERSION, PRTOS_API_REVISION),
+    .page_table=(prtosAddress_t)__pa(_page_table),
+    .page_table_size=PAGE_SIZE*(NO_PGTS+1),
+    .num_of_custom_files=1,
+    .custom_file_table={
+        [0]=(struct xef_custom_file) {
             .sAddr=__pa(cmdline),
             .size=CMDLINE_SIZE,
         },
     },
-    .eSignature=PRTOSEF_PARTITION_MAGIC,
+    .end_signature=PRTOS_EXEC_PARTITION_MAGIC,
 };
 
 __attribute__((section(".prtos_boot_params"))) struct boot_params prtos_boot_params = {

@@ -90,13 +90,13 @@ SECTIONS
         .prtosboot : {
             *(.prtosinit.text)
         } :prtosboot
-        .prtosImageHdr : {
-        	*(.prtosImageHdr)
+        .prtos_image_hdr : {
+        	*(.prtos_image_hdr)
         } :prtosboot
         . = ALIGN(PAGE_SIZE);
         . = . + LOAD_OFFSET;
         phys_startup_32 = prtos_boot;
-        prtosImageHdr = __prtosImageHdr + LOAD_OFFSET;
+        prtos_image_hdr = __prtos_image_hdr + LOAD_OFFSET;
 #else
         . = LOAD_OFFSET + LOAD_PHYSICAL_ADDR;
 #ifdef CONFIG_X86_32

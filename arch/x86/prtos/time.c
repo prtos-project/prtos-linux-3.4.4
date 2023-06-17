@@ -110,7 +110,7 @@ static void prtos_pit_time_irq(int vector, void * data) {
 }
 
 static unsigned long virt_get_tsc_khz(void) {
-	return prtosPartCtrTab->cpuKhz;
+	return prtosPartCtrTab->cpu_khz;
 }
 
 static unsigned long virt_get_wallclock(void) {

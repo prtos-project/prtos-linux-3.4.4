@@ -29,7 +29,7 @@ ENTRY(prtos_boot)
 	movl $(init_thread_union+THREAD_SIZE-__PAGE_OFFSET),%esp	/* Stack physical address */
 	mov %ebx, prtos_pct-__PAGE_OFFSET
 
-	pushl $(_pageTable-__PAGE_OFFSET)
+	pushl $(_page_table-__PAGE_OFFSET)
 	call prtos_setup_vmmap                                         /* Remap kernel */
 
 	mov $prtos_boot_params, %esi

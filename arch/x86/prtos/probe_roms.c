@@ -113,7 +113,7 @@ static int __init romchecksum(const unsigned char *rom, unsigned long length)
 }
 
 __init static int rom_available(unsigned long start, unsigned long end) {
-    struct prtosPhysicalMemMap *memMap;
+    struct prtos_physical_mem_map *memMap;
     int e;
     unsigned long size;
 
