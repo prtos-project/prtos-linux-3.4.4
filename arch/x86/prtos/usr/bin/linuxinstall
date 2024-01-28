@@ -22,7 +22,7 @@ LINUX=\
     arch/x86/prtos/usr/lib/modules/${KERNELVERSION}+/kernel/*/*/*/{.,*}
     #arch/x86/prtos/usr/lib/modules/${KERNELVERSION}+/kernel/*/*/*/*/{.,*}
     #arch/x86/prtos/usr/lib/modules/${KERNELVERSION}+/kernel/*/*/*/*/*/{.,*}
-    arch/x86/prtos/usr/lib/modules/${KERNELRELEASE}/modules.*
+    arch/x86/prtos/usr/lib/modules/${KERNELVERSION}/modules.*
 	
     # common
     arch/x86/prtos/usr/common/
